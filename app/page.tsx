@@ -10,7 +10,7 @@ import {
   faLinkedin,
 } from "@fortawesome/free-brands-svg-icons";
 
-export default function Footer() {
+export default function Home() {
   return (
 
     <div
