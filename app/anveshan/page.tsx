@@ -35,6 +35,7 @@ export default function Home() {
             >
               The Official Tech Magazine of MNTC, NIT Durgapur
             </h2>
+            <br/><br/>
 
             {/* Paragraph */}
             <p className="text-sm sm:text-base md:text-lg lg:text-[22px] text-white leading-relaxed max-w-xl md:max-w-2xl mb-8">
