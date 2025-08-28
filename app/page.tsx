@@ -1,5 +1,5 @@
 
-export default function Body() {
+export default function Home() {
   return (
 
     <div
