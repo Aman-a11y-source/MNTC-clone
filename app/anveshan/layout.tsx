@@ -1,22 +1,15 @@
-// layout.tsx
-import "./app.css";
-import Navbar from "./nav";
-import Footer from "./footer";
-import { Poppins } from "next/font/google";
+import { Poppins } from 'next/font/google';
+import type { ReactNode } from 'react';
 
 const poppins = Poppins({
-  subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700"], // add weights you need
+  subsets: ['latin'],
+  weight: ['300', '400', '500', '600', '700'],
 });
 
-export default function Layout({ children }: { children: React.ReactNode }) {
+export default function Layout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en">
-      <body className={`${poppins.className} min-h-screen flex flex-col`}>
-        <Navbar />
-        <main className="flex-grow">{children}</main>
-        <Footer />
-      </body>
-    </html>
+    <main className={`${poppins.className} min-h-screen flex flex-col flex-grow`}>
+      {children}
+    </main>
   );
 }
