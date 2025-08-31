@@ -1,14 +1,23 @@
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faPhone,
+  faEnvelope,
+  faMapMarkerAlt,
+} from "@fortawesome/free-solid-svg-icons";
+import {
+  faFacebook,
+  faInstagram,
+  faLinkedin,
+} from "@fortawesome/free-brands-svg-icons";
+
 export default function Home() {
   return (
 
     <div
       className="min-h-screen bg-fixed bg-no-repeat bg-cover overflow-y-scroll"
       style={{
-        backgroundImage:
-          "url('../public/images/desktop.png')",
+        backgroundImage: "url('../public/images/desktop.png')",
       }}>
-      
-
         <h1 className="absolute top-10 text-3xl md:text-4xl font-bold">
         Maths <span className="text-purple-400">N</span> Tech Club
         </h1>
@@ -37,7 +46,6 @@ export default function Home() {
               Know More About Us
             </a>
           </div>
-
           <div className="hidden lg:flex items-center justify-center fixed right-0 top-0 h-screen w-1/2">
             <img
             src="../public/images/question vector.png"
@@ -50,14 +58,12 @@ export default function Home() {
             alt="who we are vector" 
             className="w-32 h-32 object-contain" />
           </div>
-
         </div>
       </section>
 
 {/*meet the team*/}
       <section className="h-screen flex items-center justify-center px-8">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-10 items-center max-w-6xl">
-          
           <div className="absolute left-0 top-1/2 -translate-y-1/2">
             <img 
             src="../public/images/team.png" 
@@ -72,7 +78,6 @@ export default function Home() {
             className="w-40 h-auto object-contain" 
             />
           </div>
-
           <div className="order-1 md:order-2">
             <h2 className="text-3xl font-bold mb-4">
               Meet the <span className="text-purple-400">people</span> making it happen
@@ -91,7 +96,6 @@ export default function Home() {
         </div>
       </section>
     </div>
-
   </div>
   );
 }
