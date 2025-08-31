@@ -3,17 +3,17 @@ import React from "react";
 export default function App() {
   return (
     <div className="bg-[#0f0f0f] text-white min-h-screen w-full relative overflow-hidden">
-      {/* ===== Section 1: Rocket ===== */}
+      {/*section1*/}
       <section className="flex flex-col items-center justify-center py-24 relative">
-        {/* Rocket image */}
+        
         <img src="/images/rocket.png" alt="Rocket" className="w-100% mb-10" />
 
         
       </section>
 
-      {/* ===== Section 2: Who are We ===== */}
+      {/*section2*/}
       <section className="relative flex flex-col md:flex-row items-center justify-between px-6 md:px-16 py-20">
-        {/* Semi-circular rings (bottom-left) */}
+    
         <div className="pt-30">
         <div className="mt-150">
         <img
@@ -23,7 +23,7 @@ export default function App() {
         /> </div>
         </div>
 
-        {/* Left Text */}
+        
         <div className="ml-20 md:w-3/5 z-10">
           <h2 className="text-4xl lg:text-5xl font-extrabold mb-6">
             Who are <span className="text-purple-500">We?</span>
@@ -42,15 +42,15 @@ export default function App() {
           </a>
         </div>
 
-        {/* Right Illustration */}
+        
         <div className="md:w-4/5 flex justify-center mt-20 md:mt-0 z-10">
           <img src="/images/question vector.png" alt="Who are we illustration" className="w-72 lg:w-100" />
         </div>
       </section>
 
-      {/* ===== Section 3: Meet the people ===== */}
+      {/*section3*/}
       <section className="relative flex flex-col md:flex-row items-center justify-between px-6 md:px-16 py-20">
-        {/* Left: Single illustration (people + graph) */}
+        
         <div className="md:w-2/5 flex justify-center items-start mt-70">
           <img
             src="/images/team.png"
@@ -59,7 +59,7 @@ export default function App() {
           />
         </div>
 
-        {/* Right: Text */}
+        
         <div className="md:w-4/5 text-right flex flex-col justify-start">
           <h2 className="text-4xl lg:text-5xl font-extrabold mb-6 whitespace-nowrap">
             Meet the <span className="text-purple-500">people</span> making it happen
@@ -78,7 +78,7 @@ export default function App() {
     
       </section>
 
-      {/* ===== Decorative bottom-right ===== */}
+      
       <div className="absolute bottom-0 right-10 mb-1">
         <img src="/images/meet the people shape.png" alt="Decorative bottom design" className="w-100" />
       </div>
