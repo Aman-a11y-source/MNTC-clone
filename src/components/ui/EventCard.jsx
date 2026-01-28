@@ -8,7 +8,7 @@ export function EventCard({ title, date, description, image }) {
             className="glass-card rounded-xl overflow-hidden group relative"
         >
             <div className="h-48 w-full bg-gray-800 relative">
-                {/* Placeholder for event image if not provided */}
+
                 {image ? (
                     <img src={image} alt={title} className="w-full h-full object-cover" />
                 ) : (

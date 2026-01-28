@@ -7,7 +7,7 @@ export function TeamCard({ name, role, social, image }) {
             whileHover={{ scale: 1.05 }}
             className="glass-card p-6 rounded-2xl flex flex-col items-center text-center relative overflow-hidden"
         >
-            {/* Abstract Background Decoration */}
+
             <div className="absolute -top-10 -right-10 w-24 h-24 bg-neon-purple/20 rounded-full blur-2xl" />
             <div className="absolute -bottom-10 -left-10 w-24 h-24 bg-neon-blue/20 rounded-full blur-2xl" />
 
@@ -19,7 +19,7 @@ export function TeamCard({ name, role, social, image }) {
                         className="w-full h-full object-cover"
                     />
                 ) : (
-                    /* Avatar Placeholder */
+
                     <div className="w-full h-full flex items-center justify-center text-2xl font-bold text-white/20">
                         {name.charAt(0)}
                     </div>

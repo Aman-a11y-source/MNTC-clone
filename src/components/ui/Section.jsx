@@ -24,7 +24,7 @@ export function Section({ children, className, id }) {
     );
 }
 
-// Utility for merging classes safely
+
 export function cn(...inputs) {
     return twMerge(clsx(inputs));
 }

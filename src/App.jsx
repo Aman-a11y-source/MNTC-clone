@@ -2,22 +2,16 @@ import React, { useRef } from 'react';
 import { ReactLenis } from 'lenis/react';
 import { useScroll, useTransform, motion } from 'framer-motion';
 import { Facebook, Instagram, Linkedin, Phone, Mail } from 'lucide-react';
-
-
 import Experience from './components/three/Experience';
 import Navbar from './components/ui/Navbar';
 import { SplitSection } from './components/layout/SplitSection';
 import { TeamGrid } from './components/layout/TeamGrid';
 import { Section } from './components/ui/Section';
 import { EventCard } from './components/ui/EventCard';
-
-
 import { HERO_DATA, ABOUT_DATA, ANVESHAN_DATA, EVENTS_DATA, TEAM_DATA } from './data/mntcData';
 
 function App() {
   const containerRef = useRef(null);
-
-
 
   return (
     <ReactLenis root options={{ lerp: 0.1, duration: 1.5 }}>
@@ -28,25 +22,27 @@ function App() {
           <Experience />
         </div>
 
-        <Section className="h-screen flex-col justify-center items-center text-center z-10">
+        <div className="fixed inset-0 z-0 flex items-center justify-center pointer-events-none">
+          <div className="-translate-x-14">
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5, duration: 0.8 }}
+              className="mt-[20vh] md:mt-[15vh] text-xl md:text-3xl font-mono text-neon-blue tracking-[0.2em] uppercase drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] whitespace-nowrap"
+            >
+              {HERO_DATA.subtitle}
+            </motion.p>
+          </div>
+        </div>
+
+        <Section className="h-screen flex-col justify-center items-center text-center z-10 pointer-events-none">
           <motion.div
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
           >
-            <h1 className="text-8xl md:text-[10rem] font-black text-transparent bg-clip-text bg-gradient-to-b from-white to-transparent leading-[0.85] tracking-tighter mb-6 mix-blend-overlay">
-              {HERO_DATA.title}
-            </h1>
+            <div className="h-[30vh] w-full" aria-hidden="true" />
           </motion.div>
-
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5, duration: 0.8 }}
-            className="text-2xl md:text-3xl font-mono text-neon-blue tracking-[0.2em] uppercase"
-          >
-            {HERO_DATA.subtitle}
-          </motion.p>
         </Section>
 
         <div className="relative z-10 bg-black/30 backdrop-blur-sm">

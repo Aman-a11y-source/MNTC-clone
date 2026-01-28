@@ -1,185 +1,191 @@
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { Float, Stars, PerspectiveCamera, PointMaterial, Trail } from '@react-three/drei';
-import { EffectComposer, Bloom, DepthOfField, Vignette } from '@react-three/postprocessing';
-import { Suspense, useRef, useMemo, useState, useEffect } from 'react';
+import { Float, Stars, PerspectiveCamera, Sparkles, SpotLight, Text } from '@react-three/drei';
+import { EffectComposer, Bloom, Vignette, Noise } from '@react-three/postprocessing';
+import { Suspense, useRef, useMemo, useState } from 'react';
 import * as THREE from 'three';
-import { random } from 'maath';
 
-function ParticleSystem() {
-    const { viewport, mouse } = useThree();
-    const count = 4000;
-    const mesh = useRef();
-    const dummy = useMemo(() => new THREE.Object3D(), []);
+function useGlowTexture() {
+    return useMemo(() => {
+        const canvas = document.createElement('canvas');
+        canvas.width = 512;
+        canvas.height = 512;
+        const ctx = canvas.getContext('2d');
 
+        const gradient = ctx.createRadialGradient(256, 256, 0, 256, 256, 256);
+        gradient.addColorStop(0, 'rgba(255, 255, 255, 1)');
+        gradient.addColorStop(0.1, 'rgba(160, 32, 240, 0.8)');
+        gradient.addColorStop(0.4, 'rgba(100, 0, 200, 0.2)');
+        gradient.addColorStop(0.7, 'rgba(50, 0, 100, 0.05)');
+        gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
 
-    const randomPositions = useMemo(() => {
-        const positions = new Float32Array(count * 3);
-        random.inSphere(positions, { radius: 15 });
-        return positions;
-    }, [count]);
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, 0, 512, 512);
 
+        const texture = new THREE.CanvasTexture(canvas);
+        texture.needsUpdate = true;
+        return texture;
+    }, []);
+}
 
-    const targetPositions = useMemo(() => {
-        const positions = new Float32Array(count * 3);
+function ArgusEclipse() {
+    const glowTex = useGlowTexture();
+    const group = useRef();
+    const ringRef = useRef();
+    const glowRef = useRef();
+    const textRef = useRef();
 
-        for (let i = 0; i < count; i++) {
+    const [hovered, setHovered] = useState(false);
 
-            const t = (i / count) * Math.PI * 2 * 10;
-            const p = 2;
-            const q = 3;
-            const scale = 3.5;
-
-
-            const r = 2 + Math.cos(q * t);
-            const x = scale * r * Math.cos(p * t);
-            const y = scale * r * Math.sin(p * t);
-            const z = scale * Math.sin(q * t);
-
-
-            const jitter = 0.5;
-            positions[i * 3] = x + (Math.random() - 0.5) * jitter;
-            positions[i * 3 + 1] = y + (Math.random() - 0.5) * jitter;
-            positions[i * 3 + 2] = z + (Math.random() - 0.5) * jitter;
-        }
-        return positions;
-    }, [count]);
-
-
-    const offsets = useMemo(() => new Float32Array(count * 3).map(() => Math.random() * 100), [count]);
+    const { viewport } = useThree();
+    const responsiveScale = viewport.width / 8;
 
     useFrame((state, delta) => {
-        if (!mesh.current) return;
+        if (!group.current || !ringRef.current || !glowRef.current) return;
 
+        const t = state.clock.getElapsedTime();
 
-        const scrollMax = document.body.scrollHeight - window.innerHeight;
-        const scrollY = window.scrollY;
+        group.current.position.y = Math.sin(t * 0.5) * 0.1;
 
-        let progress = Math.min(scrollY / (scrollMax || 1), 1);
+        const targetSpeed = hovered ? 2.5 : 0.2;
+        ringRef.current.rotation.z += delta * targetSpeed;
 
+        const targetGlowScale = hovered ? 22 : 16;
+        const targetOpacity = hovered ? 1.0 : 0.8;
 
-        const morphFactor = THREE.MathUtils.smoothstep(progress, 0, 0.8);
-
-
-        mesh.current.rotation.y += delta * 0.05;
-        mesh.current.rotation.z += delta * 0.02;
-
-        for (let i = 0; i < count; i++) {
-            const i3 = i * 3;
-
-
-            const rx = randomPositions[i3];
-            const ry = randomPositions[i3 + 1];
-            const rz = randomPositions[i3 + 2];
-
-            const tx = targetPositions[i3];
-            const ty = targetPositions[i3 + 1];
-            const tz = targetPositions[i3 + 2];
-
-
-            let x = THREE.MathUtils.lerp(rx, tx, morphFactor);
-            let y = THREE.MathUtils.lerp(ry, ty, morphFactor);
-            let z = THREE.MathUtils.lerp(rz, tz, morphFactor);
-
-
-            const time = state.clock.getElapsedTime();
-            const noiseIntensity = (1 - morphFactor) * 0.2 + 0.05;
-
-            x += Math.sin(time * 0.5 + offsets[i3]) * noiseIntensity;
-            y += Math.cos(time * 0.3 + offsets[i3 + 1]) * noiseIntensity;
-            z += Math.sin(time * 0.2 + offsets[i3 + 2]) * noiseIntensity;
-
-
-            const mouseX = (mouse.x * viewport.width) / 2;
-            const mouseY = (mouse.y * viewport.height) / 2;
-
-            const dx = x - mouseX;
-            const dy = y - mouseY;
-            const dz = z - 0;
-
-            const dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
-
-
-            if (dist < influence) {
-                const force = (influence - dist) / influence;
-
-                x += dx * force * 1.5 * (1 - morphFactor * 0.5);
-                y += dy * force * 1.5 * (1 - morphFactor * 0.5);
-                z += dz * force * 1.5 * (1 - morphFactor * 0.5);
-            }
-
-
-            dummy.position.set(x, y, z);
-
-
-            const scale = (1 - morphFactor) * 0.8 + 0.5;
-            dummy.scale.set(scale, scale, scale);
-
-            dummy.updateMatrix();
-            mesh.current.setMatrixAt(i, dummy.matrix);
-        }
-
-        mesh.current.instanceMatrix.needsUpdate = true;
+        glowRef.current.scale.lerp(new THREE.Vector3(targetGlowScale, targetGlowScale, 1), delta * 2);
+        glowRef.current.material.opacity = THREE.MathUtils.lerp(glowRef.current.material.opacity, targetOpacity, delta * 2);
     });
 
     return (
-        <instancedMesh ref={mesh} args={[null, null, count]}>
+        <group
+            ref={group}
+            position={[0, 0, 0]}
+            onPointerOver={() => setHovered(true)}
+            onPointerOut={() => setHovered(false)}
+        >
+            <group position={[0.1, 0, 0.5]}>
+                <Text
+                    position={[-responsiveScale * 1.1, 0, 0]}
+                    fontSize={responsiveScale}
+                    fontWeight={900}
+                    letterSpacing={-0.05}
+                    color="white"
+                    anchorX="center"
+                    anchorY="middle"
+                >
+                    M
+                    <meshStandardMaterial color="#ffffff" toneMapped={false} emissive="#ffffff" emissiveIntensity={hovered ? 1.5 : 0.8} />
+                </Text>
 
-            <dodecahedronGeometry args={[0.03, 0]} />
-            <meshStandardMaterial
-                color="#ffffff"
-                emissive="#ffffff"
-                emissiveIntensity={0.2}
-                toneMapped={false}
-                transparent
-                opacity={0.7}
-                roughness={0.1}
-                metalness={0.9}
-            />
-        </instancedMesh>
-    );
-}
+                <Text
+                    position={[-responsiveScale * 0.28, 0, 0]}
+                    fontSize={responsiveScale}
+                    fontWeight={900}
+                    letterSpacing={-0.05}
+                    color="#00f3ff"
+                    anchorX="center"
+                    anchorY="middle"
+                >
+                    N
+                    <meshStandardMaterial
+                        color="#00f3ff"
+                        toneMapped={false}
+                        emissive="#00f3ff"
+                        emissiveIntensity={hovered ? 3.0 : 1.5}
+                    />
+                </Text>
 
-function ConnectingLines() {
+                <Text
+                    position={[responsiveScale * 0.38, 0, 0]}
+                    fontSize={responsiveScale}
+                    fontWeight={900}
+                    letterSpacing={-0.05}
+                    color="white"
+                    anchorX="center"
+                    anchorY="middle"
+                >
+                    T
+                    <meshStandardMaterial color="#ffffff" toneMapped={false} emissive="#ffffff" emissiveIntensity={hovered ? 1.5 : 0.8} />
+                </Text>
 
-    return (
-        <group>
-            <Float speed={1} rotationIntensity={0.2} floatIntensity={0.2}>
-                <mesh position={[-5, 0, -5]} rotation={[0, 0, Math.PI / 4]}>
-                    <ringGeometry args={[6, 6.05, 64]} />
-                    <meshStandardMaterial color="#333" emissive="#00f3ff" emissiveIntensity={0.5} opacity={0.3} transparent />
+                <Text
+                    position={[responsiveScale * 0.92, 0, 0]}
+                    fontSize={responsiveScale}
+                    fontWeight={900}
+                    letterSpacing={-0.05}
+                    color="white"
+                    anchorX="center"
+                    anchorY="middle"
+                >
+                    C
+                    <meshStandardMaterial color="#ffffff" toneMapped={false} emissive="#ffffff" emissiveIntensity={hovered ? 1.5 : 0.8} />
+                </Text>
+            </group>
+
+            <group position={[-0.2, 0, -1]}>
+
+                <group ref={ringRef} rotation={[0.4, 0, 0]}>
+                    <mesh rotation={[1.6, 0, 0]}>
+                        <torusGeometry args={[responsiveScale * 1.6, 0.15, 64, 200]} />
+                        <meshStandardMaterial
+                            color="#ffeb3b"
+                            emissive="#ffeb3b"
+                            emissiveIntensity={hovered ? 5.0 : 3.0}
+                            toneMapped={false}
+                        />
+                    </mesh>
+                </group>
+
+                <mesh ref={glowRef} position={[0, 0.5, -0.5]} scale={[16, 16, 1]}>
+                    <planeGeometry args={[1, 1]} />
+                    <meshBasicMaterial
+                        map={glowTex}
+                        transparent
+                        opacity={0.8}
+                        blending={THREE.AdditiveBlending}
+                        depthWrite={false}
+                        color="#a855f7"
+                        side={THREE.DoubleSide}
+                    />
                 </mesh>
-            </Float>
-            <Float speed={1.5} rotationIntensity={0.4} floatIntensity={0.1}>
-                <mesh position={[5, 0, -8]} rotation={[Math.PI / 4, 0, 0]}>
-                    <ringGeometry args={[4, 4.05, 64]} />
-                    <meshStandardMaterial color="#333" emissive="#bc13fe" emissiveIntensity={0.5} opacity={0.3} transparent />
-                </mesh>
-            </Float>
+            </group>
         </group>
-    )
+    );
 }
 
 function ExperienceContent() {
     return (
         <>
-            <PerspectiveCamera makeDefault position={[0, 0, 15]} fov={50} />
-            <color attach="background" args={['#000000']} />
+            <PerspectiveCamera makeDefault position={[0, 0, 18]} fov={50} />
+            <color attach="background" args={['#00020a']} />
 
-            <Stars radius={100} depth={50} count={5000} factor={4} saturation={0} fade speed={1} />
+            <Stars radius={100} depth={50} count={5000} factor={4} saturation={0} fade speed={0.5} />
 
-            <group position={[0, 0, 0]}>
-                <ParticleSystem />
+            <group position={[0, 2, -2]}>
+                <ArgusEclipse />
             </group>
 
-            <ConnectingLines />
+            <Sparkles
+                count={500}
+                scale={[30, 30, 15]}
+                size={4}
+                speed={0.2}
+                opacity={0.8}
+                color="#a855f7"
+            />
 
-            <ambientLight intensity={0.5} />
-            <pointLight position={[10, 10, 10]} intensity={1} color="#00f3ff" />
-            <pointLight position={[-10, -10, -10]} intensity={1} color="#bc13fe" />
+            <ambientLight intensity={0.5} color="#001133" />
+            <pointLight position={[0, 0, 5]} intensity={5.0} color="#a855f7" distance={20} />
 
             <EffectComposer disableNormalPass>
-                <Bloom luminanceThreshold={0.1} luminanceSmoothing={0.9} height={300} intensity={1.5} />
-                <Vignette eskil={false} offset={0.1} darkness={1.1} />
+                <Bloom
+                    luminanceThreshold={0.5}
+                    luminanceSmoothing={0.5}
+                    height={300}
+                    intensity={2.5}
+                />
+                <Noise opacity={0.05} />
+                <Vignette eskil={false} offset={0.1} darkness={0.8} />
             </EffectComposer>
         </>
     );
@@ -190,7 +196,7 @@ export default function Experience() {
         <Canvas
             gl={{ antialias: false, pixelRatio: 1, alpha: false, preserveDrawingBuffer: true }}
             dpr={[1, 1.5]}
-            camera={{ position: [0, 0, 15], fov: 50 }}
+            camera={{ position: [0, 0, 18], fov: 50 }}
         >
             <Suspense fallback={null}>
                 <ExperienceContent />

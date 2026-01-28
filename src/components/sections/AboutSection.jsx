@@ -4,7 +4,7 @@ export default function AboutSection() {
     return (
         <Section id="about" className="py-32">
             <div className="glass-card p-10 rounded-2xl max-w-5xl mx-auto border border-white/10 relative overflow-hidden">
-                {/* Decorative mesh gradient behind text */}
+
                 <div className="absolute top-0 right-0 w-64 h-64 bg-neon-purple/20 blur-[100px] -z-10" />
 
                 <div className="grid md:grid-cols-2 gap-12 items-center">
