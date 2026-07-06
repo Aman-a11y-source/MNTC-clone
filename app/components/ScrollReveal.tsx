@@ -56,16 +56,17 @@ const ScrollReveal: React.FC<ScrollRevealProps> = ({
     const ctx = gsap.context(() => {
       gsap.fromTo(
         el,
-        { transformOrigin: '0% 50%', rotate: baseRotation },
+        { transformOrigin: '0% 50%', rotate: baseRotation, opacity: 0 },
         {
-          ease: 'none',
+          ease: 'power2.out',
           rotate: 0,
+          opacity: 1,
           scrollTrigger: {
             trigger: el,
             scroller,
             start: 'top bottom',
             end: rotationEnd,
-            scrub: true
+            scrub: 1
           }
         }
       );
@@ -83,9 +84,9 @@ const ScrollReveal: React.FC<ScrollRevealProps> = ({
           scrollTrigger: {
             trigger: el,
             scroller,
-            start: 'top bottom-=20%',
+            start: 'top bottom-=10%',
             end: wordAnimationEnd,
-            scrub: true
+            scrub: 1
           }
         }
       );
@@ -101,9 +102,9 @@ const ScrollReveal: React.FC<ScrollRevealProps> = ({
             scrollTrigger: {
               trigger: el,
               scroller,
-              start: 'top bottom-=20%',
+              start: 'top bottom-=10%',
               end: wordAnimationEnd,
-              scrub: true
+              scrub: 1
             }
           }
         );
