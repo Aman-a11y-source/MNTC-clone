@@ -6,8 +6,8 @@ import './ChromaGrid.css';
 
 export interface ChromaItem {
   image: string;
-  title: string;
-  subtitle: string;
+  title?: string;
+  subtitle?: string;
   handle?: string;
   borderColor?: string;
   gradient?: string;
@@ -186,19 +186,21 @@ export const ChromaGrid: React.FC<ChromaGridProps> = ({
           } as React.CSSProperties}
         >
           <div className="chroma-img-wrapper">
-            <img src={c.image} alt={c.title} loading="lazy" />
+            <img src={c.image} alt={c.title || 'Memory'} loading="lazy" />
           </div>
-          <footer className="chroma-info">
-            <div className="flex flex-col">
-              <h3 className="name text-lg font-bold font-space-grotesk">{c.title}</h3>
-              <p className="role text-sm text-gray-400 font-sans">{c.subtitle}</p>
-            </div>
-            {c.handle && (
-              <span className="handle text-xs text-gray-400 self-center font-mono">
-                {c.handle}
-              </span>
-            )}
-          </footer>
+          {(c.title || c.subtitle || c.handle) && (
+            <footer className="chroma-info">
+              <div className="flex flex-col">
+                {c.title && <h3 className="name text-lg font-bold font-space-grotesk">{c.title}</h3>}
+                {c.subtitle && <p className="role text-sm text-gray-400 font-sans">{c.subtitle}</p>}
+              </div>
+              {c.handle && (
+                <span className="handle text-xs text-gray-400 self-center font-mono">
+                  {c.handle}
+                </span>
+              )}
+            </footer>
+          )}
         </article>
       ))}
       <div className="chroma-overlay" />
