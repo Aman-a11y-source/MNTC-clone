@@ -142,7 +142,7 @@ export const teamData: Record<string, TeamCategory> = {
       {
         id: 14,
         name: "Aman Brahma",
-        avatar: "/images/member images/year 1/aman.jpg",
+        avatar: "/images/aman.jpg",
         position: "Web Developer",
       }
     ]
