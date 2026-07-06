@@ -3,6 +3,7 @@ import { Outfit, Space_Grotesk } from "next/font/google";
 import "./globals.css";
 import TargetCursor from "./components/TargetCursor";
 import StaggeredMenu from "./components/StaggeredMenu";
+import PageTransition from "./components/PageTransition";
 
 const outfit = Outfit({
   variable: "--font-outfit",
@@ -64,6 +65,8 @@ export default function RootLayout({
           changeMenuColorOnOpen={true}
           isFixed={true}
         />
+
+        <PageTransition />
 
         <main className="pt-20">
           {children}

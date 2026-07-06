@@ -117,8 +117,8 @@ const ScrollReveal: React.FC<ScrollRevealProps> = ({
   }, [scrollContainerRef, enableBlur, baseRotation, baseOpacity, rotationEnd, wordAnimationEnd, blurStrength]);
 
   return (
-    <h2 ref={containerRef} className={`scroll-reveal ${containerClassName}`}>
-      <span className={`scroll-reveal-text ${textClassName}`}>{splitText}</span>
+    <h2 ref={containerRef} className={`scroll-reveal ${containerClassName}`.trim()}>
+      <span className={`scroll-reveal-text ${textClassName}`.trim()}>{splitText}</span>
     </h2>
   );
 };

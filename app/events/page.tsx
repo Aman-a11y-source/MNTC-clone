@@ -1,8 +1,14 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useEffect, useMemo, useRef } from "react";
 import Image from "next/image";
 import ScrollReveal from "../components/ScrollReveal";
+import { gsap } from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+
+if (typeof window !== "undefined") {
+  gsap.registerPlugin(ScrollTrigger);
+}
 
 interface EventItem {
   title: string;
@@ -14,9 +20,7 @@ interface EventItem {
 }
 
 export default function Events() {
-  const [selectedCategory, setSelectedCategory] = useState<string>("ALL");
-
-  const categories = ["ALL", "WORKSHOPS", "HACKATHON", "FINANCE EVENTS", "FUN EVENTS", "AAROHAN EVENTS"];
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const eventsList: EventItem[] = useMemo(() => [
     {
@@ -141,11 +145,135 @@ export default function Events() {
     }
   ], []);
 
-  const filteredEvents = useMemo(() => {
-    if (selectedCategory === "ALL") return eventsList;
-    return eventsList.filter(ev => ev.category === selectedCategory);
-  }, [selectedCategory, eventsList]);
+  // Filter events by category
+  const aarohanEvents = useMemo(() => eventsList.filter(ev => ev.category === "AAROHAN EVENTS"), [eventsList]);
+  const workshopEvents = useMemo(() => eventsList.filter(ev => ev.category === "WORKSHOPS"), [eventsList]);
+  const financeEvents = useMemo(() => eventsList.filter(ev => ev.category === "FINANCE EVENTS"), [eventsList]);
+  const funEvents = useMemo(() => eventsList.filter(ev => ev.category === "FUN EVENTS"), [eventsList]);
+  const hackathonEvents = useMemo(() => eventsList.filter(ev => ev.category === "HACKATHON"), [eventsList]);
 
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+
+    const ctx = gsap.context(() => {
+      // 1. Staggered fade reveal for Aarohan events
+      const aarohanCards = gsap.utils.toArray(".aarohan-card");
+      if (aarohanCards.length > 0) {
+        gsap.fromTo(aarohanCards,
+          { y: 40, opacity: 0 },
+          {
+            y: 0,
+            opacity: 1,
+            duration: 0.8,
+            stagger: 0.08,
+            ease: "power2.out",
+            scrollTrigger: {
+              trigger: ".aarohan-grid",
+              start: "top bottom-=10%",
+              toggleActions: "play none none reverse"
+            }
+          }
+        );
+      }
+
+      // 2. Sliding animation for Two-Event sections
+      const twoEventSections = gsap.utils.toArray(".two-event-row");
+      twoEventSections.forEach((sec: any) => {
+        const leftCard = sec.querySelector(".left-card");
+        const rightCard = sec.querySelector(".right-card");
+
+        ScrollTrigger.matchMedia({
+          // Laptop / Desktop (Horizontal slide to center)
+          "(min-width: 1024px)": function () {
+            gsap.fromTo(leftCard,
+              { x: -250, opacity: 0 },
+              {
+                x: 0,
+                opacity: 1,
+                duration: 1.0,
+                ease: "power3.out",
+                scrollTrigger: {
+                  trigger: sec,
+                  start: "top bottom-=15%",
+                  toggleActions: "play none none reverse"
+                }
+              }
+            );
+            gsap.fromTo(rightCard,
+              { x: 250, opacity: 0 },
+              {
+                x: 0,
+                opacity: 1,
+                duration: 1.0,
+                ease: "power3.out",
+                scrollTrigger: {
+                  trigger: sec,
+                  start: "top bottom-=15%",
+                  toggleActions: "play none none reverse"
+                }
+              }
+            );
+          },
+          // Mobile / Tablet (Upper / Lower side scroll)
+          "(max-width: 1023px)": function () {
+            gsap.fromTo(leftCard,
+              { x: -40, opacity: 0 },
+              {
+                x: 0,
+                opacity: 1,
+                duration: 0.7,
+                ease: "power2.out",
+                scrollTrigger: {
+                  trigger: sec,
+                  start: "top bottom-=15%",
+                  toggleActions: "play none none reverse"
+                }
+              }
+            );
+            gsap.fromTo(rightCard,
+              { x: 40, opacity: 0 },
+              {
+                x: 0,
+                opacity: 1,
+                duration: 0.7,
+                ease: "power2.out",
+                scrollTrigger: {
+                  trigger: sec,
+                  start: "top bottom-=15%",
+                  toggleActions: "play none none reverse"
+                }
+              }
+            );
+          }
+        });
+      });
+
+      // 3. Simple fade/pop-up animation for Single-Event sections
+      const singleEventSections = gsap.utils.toArray(".single-event-row");
+      singleEventSections.forEach((sec: any) => {
+        const card = sec.querySelector(".single-card");
+        gsap.fromTo(card,
+          { scale: 0.92, opacity: 0 },
+          {
+            scale: 1,
+            opacity: 1,
+            duration: 0.8,
+            ease: "power2.out",
+            scrollTrigger: {
+              trigger: sec,
+              start: "top bottom-=15%",
+              toggleActions: "play none none reverse"
+            }
+          }
+        );
+      });
+    }, el);
+
+    return () => {
+      ctx.revert();
+    };
+  }, []);
 
   const getGlowClass = (cat: string) => {
     switch (cat) {
@@ -181,101 +309,156 @@ export default function Events() {
     }
   };
 
-  return (
-    <div className="min-h-screen bg-[#08070d] text-white pb-24 relative overflow-hidden">
+  // Helper component to render a single event card
+  const EventCard = ({ item }: { item: EventItem }) => (
+    <div
+      className={`glass-panel p-6 flex flex-col justify-between transition-all duration-500 hover:-translate-y-2 border w-full ${getGlowClass(
+        item.category
+      )}`}
+    >
+      <div>
+        {item.image && (
+          <div className="relative w-full h-48 overflow-hidden rounded-xl mb-6 border border-white/5">
+            <Image
+              fill
+              src={item.image}
+              alt={item.title}
+              className="object-cover transition-transform duration-500 hover:scale-105"
+              sizes="(max-w-768px) 100vw, 33vw"
+            />
+          </div>
+        )}
 
+        <div className="mb-4">
+          <span className={`text-[10px] font-extrabold tracking-widest uppercase px-2.5 py-1 rounded-md border ${getTagColor(item.category)}`}>
+            {item.category}
+          </span>
+        </div>
+
+        <h3 className="text-2xl font-bold font-space-grotesk tracking-tight mb-2 text-white">
+          {item.title}
+        </h3>
+
+        <p className="text-xs font-semibold tracking-wider font-space-grotesk text-[#00FFDF] mb-4">
+          {item.date}
+        </p>
+
+        <p className="text-gray-400 text-sm md:text-base leading-relaxed mb-6 whitespace-pre-line">
+          {item.description}
+        </p>
+      </div>
+
+      <a
+        href={item.link}
+        className="inline-flex items-center text-xs font-bold tracking-widest text-[#00FFDF] hover:underline cursor-target gap-1 group mt-auto"
+      >
+        LEARN MORE 
+        <span className="transition-transform group-hover:translate-x-1">&gt;</span>
+      </a>
+    </div>
+  );
+
+  return (
+    <div ref={containerRef} className="min-h-screen bg-[#08070d] text-white pb-32 relative overflow-hidden">
+      
+      {/* Background ambient lights */}
       <div className="absolute top-10 right-10 w-96 h-96 bg-[#7C3AED] rounded-full mix-blend-screen filter blur-[135px] opacity-15 pointer-events-none animate-pulse"></div>
       <div className="absolute bottom-10 left-10 w-80 h-80 bg-[#00FFDF] rounded-full mix-blend-screen filter blur-[125px] opacity-10 pointer-events-none"></div>
 
-
-      <div className="text-center mb-16 pt-12 relative z-10">
-        <ScrollReveal baseOpacity={0.05} baseRotation={3} blurStrength={6} textClassName="text-5xl md:text-7xl font-black tracking-tight font-space-grotesk text-white">
-          Events Round The Calendar
+      {/* Main Page Title */}
+      <div className="text-center mb-24 pt-12 relative z-10">
+        <ScrollReveal baseOpacity={0.05} baseRotation={3} blurStrength={6} textClassName="text-5xl md:text-7xl font-black tracking-tight font-space-grotesk text-white uppercase">
+          Events Calendar
         </ScrollReveal>
         <div className="w-24 h-1 bg-gradient-to-r from-[#7C3AED] to-[#00FFDF] mx-auto mt-4 rounded-full"></div>
       </div>
 
-
-      <div className="max-w-6xl mx-auto px-6 mb-16 flex flex-wrap justify-center gap-3 relative z-10">
-        {categories.map((cat, idx) => (
-          <button
-            key={idx}
-            onClick={() => setSelectedCategory(cat)}
-            className={`px-5 py-2.5 rounded-full text-xs md:text-sm font-bold tracking-wider uppercase transition-all duration-300 border cursor-target ${
-              selectedCategory === cat
-                ? "bg-gradient-to-r from-[#7C3AED] to-[#5227FF] border-[#7C3AED] text-white shadow-[0_0_15px_rgba(124,58,237,0.4)] scale-105"
-                : "bg-[#0e0d19]/80 border-white/5 text-gray-400 hover:text-white hover:border-white/20"
-            }`}
-          >
-            {cat}
-          </button>
-        ))}
-      </div>
-
-
-      <div className="max-w-7xl mx-auto px-6 relative z-10">
-        {filteredEvents.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {filteredEvents.map((item, index) => (
-              <div
-                key={index}
-                className={`glass-panel p-6 flex flex-col justify-between transition-all duration-500 hover:-translate-y-2 border ${getGlowClass(
-                  item.category
-                )}`}
-              >
-                <div>
-
-                  {item.image && (
-                    <div className="relative w-full h-48 overflow-hidden rounded-xl mb-6 border border-white/5">
-                      <Image
-                        fill
-                        src={item.image}
-                        alt={item.title}
-                        className="object-cover transition-transform duration-500 hover:scale-105"
-                        sizes="(max-w-768px) 100vw, 33vw"
-                      />
-                    </div>
-                  )}
-
-
-                  <div className="mb-4">
-                    <span className={`text-[10px] font-extrabold tracking-widest uppercase px-2.5 py-1 rounded-md border ${getTagColor(item.category)}`}>
-                      {item.category}
-                    </span>
-                  </div>
-
-
-                  <h3 className="text-2xl font-bold font-space-grotesk tracking-tight mb-2 text-white">
-                    {item.title}
-                  </h3>
-
-
-                  <p className="text-xs font-semibold tracking-wider font-space-grotesk text-[#00FFDF] mb-4">
-                    {item.date}
-                  </p>
-
-
-                  <p className="text-gray-400 text-sm md:text-base leading-relaxed mb-6 whitespace-pre-line">
-                    {item.description}
-                  </p>
-                </div>
-
-
-                <a
-                  href={item.link}
-                  className="inline-flex items-center text-xs font-bold tracking-widest text-[#00FFDF] hover:underline cursor-target gap-1 group mt-auto"
-                >
-                  LEARN MORE 
-                  <span className="transition-transform group-hover:translate-x-1">&gt;</span>
-                </a>
+      <div className="max-w-7xl mx-auto px-6 relative z-10 flex flex-col gap-32">
+        
+        {/* Section 1: Aarohan Events (Grid Layout, Simple Reveal) */}
+        <div>
+          <div className="mb-12 border-l-4 border-[#00FFDF] pl-4">
+            <span className="text-xs font-bold tracking-widest text-[#00FFDF] uppercase bg-cyan-500/10 px-3 py-1.5 rounded-md border border-cyan-500/20">Annual Fest</span>
+            <h2 className="text-3xl md:text-4xl lg:text-5xl font-black font-space-grotesk text-white mt-3 uppercase">Aarohan Flagship Events</h2>
+          </div>
+          <div className="aarohan-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {aarohanEvents.map((item, index) => (
+              <div key={index} className="aarohan-card flex">
+                <EventCard item={item} />
               </div>
             ))}
           </div>
-        ) : (
-          <div className="text-center py-20">
-            <p className="text-gray-500 font-medium">No events found in this category.</p>
+        </div>
+
+        {/* Section 2: Workshops (2 Events, Slide in Left/Right) */}
+        {workshopEvents.length === 2 && (
+          <div>
+            <div className="mb-12 border-l-4 border-[#10B981] pl-4">
+              <span className="text-xs font-bold tracking-widest text-[#10B981] uppercase bg-emerald-500/10 px-3 py-1.5 rounded-md border border-emerald-500/20">Skill Building</span>
+              <h2 className="text-3xl md:text-4xl lg:text-5xl font-black font-space-grotesk text-white mt-3 uppercase">Learning Workshops</h2>
+            </div>
+            <div className="two-event-row flex flex-col lg:flex-row gap-8 justify-center items-stretch max-w-5xl mx-auto w-full overflow-hidden p-2">
+              <div className="left-card flex-1 flex">
+                <EventCard item={workshopEvents[0]} />
+              </div>
+              <div className="right-card flex-1 flex">
+                <EventCard item={workshopEvents[1]} />
+              </div>
+            </div>
           </div>
         )}
+
+        {/* Section 3: Finance Events (2 Events, Slide in Left/Right) */}
+        {financeEvents.length === 2 && (
+          <div>
+            <div className="mb-12 border-l-4 border-[#F59E0B] pl-4">
+              <span className="text-xs font-bold tracking-widest text-[#F59E0B] uppercase bg-amber-500/10 px-3 py-1.5 rounded-md border border-amber-500/20">Market Simulations</span>
+              <h2 className="text-3xl md:text-4xl lg:text-5xl font-black font-space-grotesk text-white mt-3 uppercase">Financial Events</h2>
+            </div>
+            <div className="two-event-row flex flex-col lg:flex-row gap-8 justify-center items-stretch max-w-5xl mx-auto w-full overflow-hidden p-2">
+              <div className="left-card flex-1 flex">
+                <EventCard item={financeEvents[0]} />
+              </div>
+              <div className="right-card flex-1 flex">
+                <EventCard item={financeEvents[1]} />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Section 4: Hackathons (1 Event, Centered Pop-up) */}
+        {hackathonEvents.length > 0 && (
+          <div>
+            <div className="mb-12 border-l-4 border-[#8B5CF6] pl-4">
+              <span className="text-xs font-bold tracking-widest text-[#8B5CF6] uppercase bg-purple-500/10 px-3 py-1.5 rounded-md border border-purple-500/20">Competitive Coding</span>
+              <h2 className="text-3xl md:text-4xl lg:text-5xl font-black font-space-grotesk text-white mt-3 uppercase">Ideations & Hackathons</h2>
+            </div>
+            <div className="single-event-row flex justify-center w-full p-2">
+              <div className="single-card max-w-md w-full flex">
+                <EventCard item={hackathonEvents[0]} />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Section 5: Fun Events (2 Events, Slide in Left/Right) */}
+        {funEvents.length === 2 && (
+          <div>
+            <div className="mb-12 border-l-4 border-[#EF4444] pl-4">
+              <span className="text-xs font-bold tracking-widest text-[#EF4444] uppercase bg-red-500/10 px-3 py-1.5 rounded-md border border-red-500/20">Interactive Challenges</span>
+              <h2 className="text-3xl md:text-4xl lg:text-5xl font-black font-space-grotesk text-white mt-3 uppercase">Fun Events</h2>
+            </div>
+            <div className="two-event-row flex flex-col lg:flex-row gap-8 justify-center items-stretch max-w-5xl mx-auto w-full overflow-hidden p-2">
+              <div className="left-card flex-1 flex">
+                <EventCard item={funEvents[0]} />
+              </div>
+              <div className="right-card flex-1 flex">
+                <EventCard item={funEvents[1]} />
+              </div>
+            </div>
+          </div>
+        )}
+
       </div>
     </div>
   );
